@@ -145,6 +145,20 @@ class LegoTool:
         self.numCylinders += 1
         return name
 
+    def createLegoCylinder2x2(self):
+        brick = []
+
+        brick.append(mc.polyCylinder(r=0.75, h=0.96, sx = 18)[0])
+        mc.polyBevel(o=0.02)
+
+        for i in range(4):
+            front = 1 if i % 2 == 0 else -1
+            side = 1 if i > 1 else -1
+            brick.append(mc.polyCylinder(r=.24, h=0.17, sx=12)[0])
+            mc.move(0.35 * front, (0.96/2 + 0.17/2), 0.35 * side)
+
+        return mc.group(brick, n="Cylinder2x2_#")
+
     def createLegoSlant(self, width=2, top=True):
         unitWidth = 0.8
         height = 0.96
@@ -188,10 +202,9 @@ class LegoTool:
             mc.rotate(0, randomRot)
         return name
 
-    def createLegoCactus(self):
+    def createLegoCactus(self, height=5):
         # Cactus
-        small = False
-        height = 5
+        small = True
 
         if small:
             numFlats = 0
@@ -473,25 +486,41 @@ class LegoTool:
                     mc.rotate(0, 180)
 
         # Main nose thing
-        self.createLegoBrick(2, 16)
+        car.append(self.createLegoBrick(2, 16))
         self.moveLego(-12, 1 / 3)
-        self.createLegoBrick(6, 16)
+        car.append(self.createLegoBrick(6, 16))
         self.moveLego(-12, 1 + 1 / 3)
-        self.createLegoBrick(6, 16)
+        car.append(self.createLegoBrick(6, 16))
         self.moveLego(-12, 2 + 1 / 3)
-        self.createLegoBrick(2, 16)
+        car.append(self.createLegoBrick(2, 16))
         self.moveLego(-12, 3 + 1 / 3)
 
+        # Side nose curve pieces
         for j in range(4):
             top = 0 if j % 2 == 0 else -3
             side = 1 if j > 1 else -1
             for i in range(8):
+                brick = []
                 curvePiece = mc.polyCube(h=0.96, w=0.8 * 2, d=0.8 * 2)[0]
+                brick.append(curvePiece)
                 self.moveLego(-5 - 2 * i, 3 + 1 / 3 + 0.96 / 2 + top, 2 * side)
                 mc.select(curvePiece + ".e[1]")
                 mc.polyBevel(o=0.9, sg=5)
                 mc.select(curvePiece)
                 mc.polyBevel(o=0.02)
+
+                # Top studs
+                if j == 0 or j == 2:
+                    stud = mc.polyCylinder(r=.24, h=0.17, sx=12)[0]
+                    self.moveLego(-5 - 2 * i + 0.4, 3 + 1 / 3 + 0.96 / 2 + top + 0.96/2 + 0.17/2, -0.5 + 2 * side)
+                    brick.append(stud)
+
+                    stud = mc.polyCylinder(r=.24, h=0.17, sx=12)[0]
+                    self.moveLego(-5 - 2 * i - 0.4, 3 + 1 / 3 + 0.96 / 2 + top + 0.96/2 + 0.17/2, -0.5 + 2 * side)
+                    brick.append(stud)
+
+                car.append(mc.group(brick, n="CurvePiece_#"))
+
                 if j == 0:
                     mc.rotate(0, 180)
                 if j == 1:
@@ -499,27 +528,51 @@ class LegoTool:
                 if j == 3:
                     mc.rotate(0, 0, 180)
 
-        for i in range(10):
-            mc.polyCylinder(h=0.96, r=2, sx=18)
-            mc.polyBevel(o=0.02)
-            mc.rotate(0, 0, 90)
-            mc.move(-3.7 - i * 0.96, 0.96 * 2.5)
+        # Smokestack
+        for i in range(2):
+            car.append(self.createLegoCylinder2x2())
+            self.moveLego(-16, 4 + 2/3 + i, 0)
 
-        # Nose cap
-        noseCap = mc.polyCylinder(h=0.4, r=2, sx=18)[0]
-        mc.rotate(0, 0, 90)
-        mc.move(-3.7 - 10 * 0.96 - 0.0, 0.96 * 2.5)
+        brick = []
+        smokestackTop = mc.polyCylinder(r=0.75, h=0.96, sx = 18)[0]
+        self.moveLego(-16, 6 + 2/3, 0)
+        brick.append(smokestackTop)
 
-        edgeGroup = []
+        edges = []
         for i in range(18, 36):
-            edgeGroup.append(noseCap + ".e[" + str(i) + "]")
+            edges.append(smokestackTop + ".e[" + str(i) + "]")
 
-        mc.select(edgeGroup)
-        mc.polyBevel(sg=5, o=0.4, r=1)
+        mc.select(edges)
+        mc.scale(2, 2, 2)
 
-        mc.polyCylinder(r=.24, h=0.17, sx=12)
-        mc.rotate(0, 0, 90)
-        mc.move(-3.7 - 10 * 0.96 - 0.24, 0.96 * 2.5)
+        mc.select(smokestackTop)
+        mc.polyBevel(o=0.02)
+
+        for i in range(4):
+            for j in range(4):
+                if i == 0 and j == 0 or i == 0 and j == 3 or i == 3 and j == 0 or i == 3 and j == 3:
+                    pass
+                else:
+                    brick.append(mc.polyCylinder(r=.24, h=0.17, sx=12)[0])
+                    self.moveLego(-16 + i - 1.5, 8 - 1/3 + 0.17/2, j - 1.5)
+
+        smokeStack = mc.group(brick, n="smokeStack")
+        car.append(smokeStack)
+
+        # Little smokestack
+        for i in range(2):
+            car.append(self.createLegoCylinder(bottom=False))
+            self.moveLego(-10, 4 + 1/3 + i, 0)
+
+        car.append(self.createWheelSet())
+        self.moveLego(2, -4)
+        car.append(self.createWheelSet())
+        self.moveLego(-1, -4)
+
+        car.append(self.createWheelSet())
+        self.moveLego(-4, -4)
+        car.append(self.createWheelSet())
+        self.moveLego(-7, -4)
 
         mc.group(car, n="Steam Engine")
 
@@ -791,5 +844,3 @@ class LegoTool:
             mc.rotate(side * 90, 0, 90)
 
         mc.group(car, n="CoalCar#")
-
-
