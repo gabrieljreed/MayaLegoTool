@@ -885,14 +885,14 @@ class LegoTool:
 
         # Wheels
         car.append(self.createWheelSet())
-        self.moveLego(6, -3)
+        self.moveLego(6, -3 - 1/3)
         car.append(self.createWheelSet())
-        self.moveLego(3, -3)
+        self.moveLego(3, -3 - 1/3)
 
         car.append(self.createWheelSet())
-        self.moveLego(-6, -3)
+        self.moveLego(-6, -3 - 1/3)
         car.append(self.createWheelSet())
-        self.moveLego(-3, -3)
+        self.moveLego(-3, -3 - 1/3)
 
         for i in range(4):
             front = 1
@@ -902,7 +902,7 @@ class LegoTool:
             if i > 1:
                 side = -1
             car.append(self.createLegoBrick(4, 1, flat=True, bottom=False))
-            self.moveLego(front * 4.4, -0.85, side * 4.8)
+            self.moveLego(front * 4.4, -0.85 - 1/3, side * 4.8)
             mc.rotate(side * 90, 0, 90)
 
         mc.group(car, n="CoalCar#")
