@@ -486,40 +486,23 @@ class LegoTool:
                     mc.rotate(0, 180)
 
         # Main nose thing
-        car.append(self.createLegoBrick(2, 16))
+        car.append(self.createLegoBrick(8, 16, flat=True, bottom=False))
+        self.moveLego(-12, 0, 0)
+        car.append(self.createLegoBrick(2, 16, top=False, bottom=False))
         self.moveLego(-12, 1 / 3)
-        car.append(self.createLegoBrick(6, 16))
+        car.append(self.createLegoBrick(6, 16, top=False, bottom=False))
         self.moveLego(-12, 1 + 1 / 3)
-        car.append(self.createLegoBrick(6, 16))
+        car.append(self.createLegoBrick(6, 16, top=False, bottom=False))
         self.moveLego(-12, 2 + 1 / 3)
         car.append(self.createLegoBrick(2, 16))
         self.moveLego(-12, 3 + 1 / 3)
 
-        # Side nose curve pieces
         for j in range(4):
             top = 0 if j % 2 == 0 else -3
             side = 1 if j > 1 else -1
             for i in range(8):
-                brick = []
-                curvePiece = mc.polyCube(h=0.96, w=0.8 * 2, d=0.8 * 2)[0]
-                brick.append(curvePiece)
-                self.moveLego(-5 - 2 * i, 3 + 1 / 3 + 0.96 / 2 + top, 2 * side)
-                mc.select(curvePiece + ".e[1]")
-                mc.polyBevel(o=0.9, sg=5)
-                mc.select(curvePiece)
-                mc.polyBevel(o=0.02)
-
-                # Top studs
-                if j == 0 or j == 2:
-                    stud = mc.polyCylinder(r=.24, h=0.17, sx=12)[0]
-                    self.moveLego(-5 - 2 * i + 0.4, 3 + 1 / 3 + 0.96 / 2 + top + 0.96/2 + 0.17/2, -0.5 + 2 * side)
-                    brick.append(stud)
-
-                    stud = mc.polyCylinder(r=.24, h=0.17, sx=12)[0]
-                    self.moveLego(-5 - 2 * i - 0.4, 3 + 1 / 3 + 0.96 / 2 + top + 0.96/2 + 0.17/2, -0.5 + 2 * side)
-                    brick.append(stud)
-
-                car.append(mc.group(brick, n="CurvePiece_#"))
+                car.append(self.createLegoSlant(2, top= not top))
+                self.moveLego(-5 - 2 * i, 3 + 1 / 3 + top, 2 * side)
 
                 if j == 0:
                     mc.rotate(0, 180)
@@ -527,6 +510,33 @@ class LegoTool:
                     mc.rotate(180)
                 if j == 3:
                     mc.rotate(0, 0, 180)
+
+        # Side nose curve pieces
+        # for j in range(2):
+        #     side = 1 if j % 2 == 0 else -1
+        #     for i in range(8):
+        #         brick = []
+        #         curvePiece = mc.polyCube(h=0.96, w=0.8 * 2, d=0.8 * 2)[0]
+        #         brick.append(curvePiece)
+        #         self.moveLego(-5 - 2 * i, 3 + 1 / 3 + 0.96 / 2, 2 * side)
+        #         mc.select(curvePiece + ".e[1]")
+        #         mc.polyBevel(o=0.9, sg=5)
+        #         mc.select(curvePiece)  # FIXME: Could only select certain edges to bevel
+        #         mc.polyBevel(o=0.02)
+        #
+        #         # Top studs
+        #         stud = mc.polyCylinder(r=.24, h=0.17, sx=12)[0]
+        #         self.moveLego(-5 - 2 * i + 0.4, 3 + 1 / 3 + 0.96 / 2 + 0.96/2 + 0.17/2, -0.5 + 2 * side)
+        #         brick.append(stud)
+        #
+        #         stud = mc.polyCylinder(r=.24, h=0.17, sx=12)[0]
+        #         self.moveLego(-5 - 2 * i - 0.4, 3 + 1 / 3 + 0.96 / 2 + 0.96/2 + 0.17/2, -0.5 + 2 * side)
+        #         brick.append(stud)
+        #
+        #         car.append(mc.group(brick, n="CurvePiece_#"))
+        #
+        #         if side == -1:
+        #             mc.rotate(0, 180, 0)
 
         # Smokestack
         for i in range(2):
@@ -565,14 +575,14 @@ class LegoTool:
             self.moveLego(-10, 4 + 1/3 + i, 0)
 
         car.append(self.createWheelSet())
-        self.moveLego(2, -4)
+        self.moveLego(0, -4)
         car.append(self.createWheelSet())
-        self.moveLego(-1, -4)
+        self.moveLego(-3, -4)
 
         car.append(self.createWheelSet())
-        self.moveLego(-4, -4)
+        self.moveLego(-13, -4)
         car.append(self.createWheelSet())
-        self.moveLego(-7, -4)
+        self.moveLego(-16, -4)
 
         mc.group(car, n="Steam Engine")
 
@@ -580,7 +590,7 @@ class LegoTool:
         # Train car
         car = []
 
-        # Baseplate
+        # Base plate
         car.append(self.createLegoBrick(10, 20, bottom=False, flat=True))
         self.moveLego(0, 2 / 3, 0)
 
