@@ -1,11 +1,17 @@
 import maya.cmds as mc
 import random
+from LegoShader import LegoShader
 
 
 class LegoTool:
     def __init__(self):
         self.numBricks = 0
         self.numCylinders = 0
+
+        self.legoShader = LegoShader()
+
+    def hello(self):
+        print("hello world")
 
     def deleteAll(self):
         mc.select(all=True)
@@ -184,6 +190,7 @@ class LegoTool:
     def createLegoPlant(self, randomRotate=True):
         plant = []
         plant.append(self.createLegoCylinder(flat=True, bottom=False))
+
         numBranches = 3
         for i in range(numBranches):
             branch = mc.polyCylinder(r=0.06, sx=8, h=1.5)[0]
@@ -193,10 +200,17 @@ class LegoTool:
             mc.move(0, 1, 0)
             rotJitter = random.uniform(-5, 5)
             mc.rotate(25 + rotJitter, (360 / numBranches) * i)
+
+        # Create and apply shaders
+        plantShader = self.legoShader.createShader(0.0. 0.272, 0.0)
+        for lego in plant:
+            self.legoShader.applyShader(plantShader, lego)
+
         name = mc.group(plant, n="Plant_#")
         if randomRotate:
             randomRot = random.uniform(0, 360)
             mc.rotate(0, randomRot)
+
         return name
 
     def createLegoCactus(self, height=5):
@@ -260,7 +274,7 @@ class LegoTool:
         #     # self.createLegoCylinder(flat=True, bottom=False)
         #     # mc.move(0, height * 0.8 + 0.2)
 
-    def moveLego(self, x=0.0, y=0.0, z=0.0):
+    def moveLego(self, x=0.0, y=0.0, z=0.0, flat=False):
         mc.move(x * 0.8, y * 0.96, z * 0.8)
 
     def createTracks(self, length=5):
@@ -392,17 +406,15 @@ class LegoTool:
         name = mc.group(wheelList, n="wheel#")
         return name
 
-    def createWheelSet(self, wheelScale=1.0):
+    def createWheelSet(self):
         wheelSet = []
 
         wheelSet.append(self.createWheel())
         mc.rotate(90, 0, 0)
-        mc.scale(wheelScale, 1, wheelScale)
         self.moveLego(0, 2.2, 4)
 
         wheelSet.append(self.createWheel())
         mc.rotate(-90, 0, 0)
-        mc.scale(wheelScale, 1, wheelScale)
         self.moveLego(0, 2.2, -4)
 
         wheelSet.append(self.createLegoBrick(6, 2, bottom=False))
@@ -417,21 +429,6 @@ class LegoTool:
 
         return mc.group(wheelSet, n="wheelSet#")
 
-    def createDoubleWheelSet(self):
-        set = []
-        set.append(self.createWheelSet())
-        self.moveLego(0, -1)
-        set.append(self.createWheelSet())
-        self.moveLego(3, -1)
-
-        for i in range(2):
-            side = 1 if i % 2 == 0 else -1
-            set.append(self.createLegoBrick(4, 1, flat=True, top=True, bottom=False))
-            self.moveLego(1.5, 1.18, 4.8*side)
-            mc.rotate(90 * side, 0, 90)
-
-        return mc.group(set, n="DoubleWheelSet_#")
-
     def createSteamEngine(self):
         # Steam engine
         car = []
@@ -439,89 +436,101 @@ class LegoTool:
         car.append(self.createLegoBrick(8, 8, flat=True, bottom=False))
 
         # Walls
-        # Side walls
-        for i in range(2):
-            side = 1 if i % 2 == 0 else -1
-            # Walls
-            for j in range(2):
-                size = 4 if i % 2 == 0 else 3
-                car.append(self.createLegoBrick(1, size, top=True, bottom=False))
-                self.moveLego(-size/2, 1/3 + j, 3.5 * side)
-                # Window
-                car.append(self.createLegoBrick(1, 1, top=False, bottom=False))
-                self.moveLego(-0.5, j + 2 + 1/3, 3.5*side)
+        car.append(self.createLegoBrick(1, 8, bottom=False))
+        self.moveLego(0, 1 / 3, 3.5)
+        car.append(self.createLegoBrick(1, 8, bottom=False))
+        self.moveLego(0, 1 / 3, -3.5)
+        car.append(self.createLegoBrick(6, 1, bottom=False))
+        self.moveLego(-3.5, 1 / 3)
 
-            for j in range(4):
-                size = 2 if j % 2 == 0 else 1
-                car.append(self.createLegoBrick(1, size, top=False, bottom=False))
-                self.moveLego(2 + size/2, 1/3 + j, 3.5 * side)
+        car.append(self.createLegoBrick(1, 7, bottom=False))
+        self.moveLego(0.5, 4 / 3, 3.5)
+        car.append(self.createLegoBrick(1, 7, bottom=False))
+        self.moveLego(0.5, 4 / 3, -3.5)
+        car.append(self.createLegoBrick(8, 1, bottom=False))
+        self.moveLego(-3.5, 4 / 3)
 
-            car.append(self.createLegoBrick(1, 2, top=False, bottom=False))
-            self.moveLego(-3, 2 + 1/3, 3.5 * side)
-            car.append(self.createLegoBrick(1, 1, top=False, bottom=False))
-            self.moveLego(-2.5, 3 + 1/3, 3.5*side)
-            # Top
-            car.append(self.createLegoBrick(1, 7, top=False))
-            self.moveLego(0.5, 4 + 1/3, 3.5 * side)
+        car.append(self.createLegoBrick(1, 8, bottom=False))
+        self.moveLego(0, 7 / 3, 3.5)
+        car.append(self.createLegoBrick(1, 8, bottom=False))
+        self.moveLego(0, 7 / 3, -3.5)
+        car.append(self.createLegoBrick(6, 1, bottom=False))
+        self.moveLego(-3.5, 7 / 3)
 
-        # Front/back walls
-        for i in range(2):
-            for j in range(5):
-                front = 1 if i % 2 == 0 else -1
-                size = 6 if j % 2 == 0 else 8
-                if front == 1 and j > 2:
-                    size = 6
-                car.append(self.createLegoBrick(size, 1, top=False, bottom=False))
-                self.moveLego(-3.5 * front, 1/3 + j, 0)
-
-        # Style cylinders
         for i in range(4):
             front = 0 if i % 2 == 0 else 1
             side = -1 if i > 1 else 1
             car.append(self.createLegoCylinder(bottom=False))
             self.moveLego(-3.5, 3 + 1 / 3 + front, 3.5 * side)
 
-        # Very top front
         for i in range(2):
             car.append(self.createLegoBrick(6, 1, bottom=False, top=False))
             self.moveLego(-3.5, i + 3 + (1 / 3))
 
+        # Windows
+        xPositions = [-2.5, 0.5, 3.5]
+        for x in xPositions:
+            for i in range(4):
+                front = -1 if i % 2 == 0 else 1
+                side = 0 if i > 1 else 1
+                car.append(self.createLegoBrick(1, 1, top=False, bottom=False))
+                self.moveLego(x, side + 3 + (1 / 3), 3.5 * front)
+
         # Roof
         car.append(self.createLegoBrick(8, 10, flat=True, bottom=False, top=False))  # FIXME: Make top=False later
         self.moveLego(1, 5 + 1 / 3)
-        for i in range(2):
-            side = 1 if i % 2 == 0 else -1
-            car.append(self.createLegoBrick(2, 10, bottom=False))
-            self.moveLego(1, 5 + 2 / 3, side)
+        car.append(self.createLegoBrick(2, 10, bottom=False))
+        self.moveLego(1, 5 + 2 / 3)
 
-            # Slanted pieces
-            for j in range(5):
-                car.append(self.createLegoSlant(2))
-                self.moveLego(-3 + 2*j, 5 + 2/3, 3 * side)
-                if side == -1:
-                    mc.rotate(0, 180, 0)
-
-        for i in range(2):
-            car.append(self.createLegoCylinder(bottom=False, flat=bool(i)))
-            self.moveLego(-1, 7+i - 1/3, 0)
+        # Curved roof pieces
+        for j in range(2):
+            side = -1 if j % 2 == 0 else 1
+            for i in range(5):
+                roofBrick = mc.polyCube(h=0.96, d=0.8 * 3, w=0.8 * 2)[0]
+                self.moveLego(-3 + 2 * i, 5 + 2 / 3 + 0.96 / 2, 2.5 * side)
+                mc.select(roofBrick + ".e[1]")
+                mc.polyBevel(o=0.9, sg=5)
+                mc.select(roofBrick)
+                mc.polyBevel(o=0.02)
+                car.append(roofBrick)
+                if j == 0:
+                    mc.rotate(0, 180)
 
         # Main nose thing
-        # Base plate
-        car.append(self.createLegoBrick(8, 18, flat=True, bottom=False))
-        self.moveLego(-13, 0, 0)
-        car.append(self.createLegoBrick(4, 16, bottom=False))
-        self.moveLego(-12, 1/3, 0)
+        car.append(self.createLegoBrick(2, 16))
+        self.moveLego(-12, 1 / 3)
+        car.append(self.createLegoBrick(6, 16))
+        self.moveLego(-12, 1 + 1 / 3)
+        car.append(self.createLegoBrick(6, 16))
+        self.moveLego(-12, 2 + 1 / 3)
+        car.append(self.createLegoBrick(2, 16))
+        self.moveLego(-12, 3 + 1 / 3)
 
-        for i in range(2):
-            car.append(self.createLegoBrick(4, 16, top=False, bottom=False))
-            self.moveLego(-12, 2 + 1/3 + i)
-
+        # Side nose curve pieces
         for j in range(4):
             top = 0 if j % 2 == 0 else -3
             side = 1 if j > 1 else -1
             for i in range(8):
-                car.append(self.createLegoSlant(2, top=not bool(top)))
-                self.moveLego(-5 - 2 * i, 4 + 1 / 3 + top, side)
+                brick = []
+                curvePiece = mc.polyCube(h=0.96, w=0.8 * 2, d=0.8 * 2)[0]
+                brick.append(curvePiece)
+                self.moveLego(-5 - 2 * i, 3 + 1 / 3 + 0.96 / 2 + top, 2 * side)
+                mc.select(curvePiece + ".e[1]")
+                mc.polyBevel(o=0.9, sg=5)
+                mc.select(curvePiece)
+                mc.polyBevel(o=0.02)
+
+                # Top studs
+                if j == 0 or j == 2:
+                    stud = mc.polyCylinder(r=.24, h=0.17, sx=12)[0]
+                    self.moveLego(-5 - 2 * i + 0.4, 3 + 1 / 3 + 0.96 / 2 + top + 0.96/2 + 0.17/2, -0.5 + 2 * side)
+                    brick.append(stud)
+
+                    stud = mc.polyCylinder(r=.24, h=0.17, sx=12)[0]
+                    self.moveLego(-5 - 2 * i - 0.4, 3 + 1 / 3 + 0.96 / 2 + top + 0.96/2 + 0.17/2, -0.5 + 2 * side)
+                    brick.append(stud)
+
+                car.append(mc.group(brick, n="CurvePiece_#"))
 
                 if j == 0:
                     mc.rotate(0, 180)
@@ -530,71 +539,14 @@ class LegoTool:
                 if j == 3:
                     mc.rotate(0, 0, 180)
 
-        # Rudolf nose
-        car.append(self.createLegoCylinder(flat=True, bottom=False))
-        mc.rotate(0, 0, 90)
-        self.moveLego(-20.25, 3.13, 0)
-
-        # Side decorations
-        for i in range(2):
-            side = 1 if i % 2 == 0 else -1
-            car.append(self.createLegoBrick(2, 12, bottom=False))
-            self.moveLego(-10, 1/3, 3 * side)
-
-            car.append(self.createLegoBrick(2, 11, bottom=False))
-            self.moveLego(-9.5, 1 + 1/3, 3 * side)
-
-            car.append(self.createLegoSlant(2))
-            self.moveLego(-17, 1/3, 3 * side)
-            mc.rotate(0, -90, 0)
-
-            car.append(self.createLegoSlant(2))
-            self.moveLego(-16, 1 + 1/3, 3 * side)
-            mc.rotate(0, -90, 0)
-
-            car.append(self.createLegoSlant(1))
-            self.moveLego(-6.5, 2 + 1/3, 3 * side)
-
-            car.append(self.createLegoSlant(1))
-            self.moveLego(-11.5, 2 + 1 / 3, 3 * side)
-
-            # Headlights
-            car.append(self.createLegoBrick(1, 1, bottom=False))
-            self.moveLego(-20.5, 1/3, 3.5 * side)
-
-            car.append(self.createLegoCylinder(flat=True, bottom=False))
-            self.moveLego(-21.25, 1/3 + 1/4, 3.5 * side)
-            mc.rotate(0, 0, 90)
-
-        # Little front slant
-        car.append(self.createLegoSlant(2))
-        mc.rotate(0, -90, 0)
-        self.moveLego(-21, 1/3, 0)
-
-        # Front bumper
-        car.append(self.createLegoBrick(2, 8, flat=True, bottom=False))
-        mc.rotate(0, 90, 90)
-        self.moveLego(-22.3, -0.72, 0)
-
-        for i in range(2):
-            side = 1 if i % 2 == 0 else -1
-
-            car.append(self.createLegoBrick(2, 3, bottom=False))
-            self.moveLego(-23.4 + 1/3, -1.07, 2.5 * side)
-            mc.rotate(0, 90, 90)
-
-            car.append(self.createLegoCylinder2x2())
-            self.moveLego(-24.6 + 1/3, -0.57, 3 * side)
-            mc.rotate(0, 0, 90)
-
         # Smokestack
         for i in range(2):
             car.append(self.createLegoCylinder2x2())
-            self.moveLego(-16, 5 + 2/3 + i, 0)
+            self.moveLego(-16, 4 + 2/3 + i, 0)
 
         brick = []
         smokestackTop = mc.polyCylinder(r=0.75, h=0.96, sx = 18)[0]
-        self.moveLego(-16, 7 + 2/3, 0)
+        self.moveLego(-16, 6 + 2/3, 0)
         brick.append(smokestackTop)
 
         edges = []
@@ -613,7 +565,7 @@ class LegoTool:
                     pass
                 else:
                     brick.append(mc.polyCylinder(r=.24, h=0.17, sx=12)[0])
-                    self.moveLego(-16 + i - 1.5, 9 - 1/3 + 0.17/2, j - 1.5)
+                    self.moveLego(-16 + i - 1.5, 8 - 1/3 + 0.17/2, j - 1.5)
 
         smokeStack = mc.group(brick, n="smokeStack")
         car.append(smokeStack)
@@ -621,20 +573,17 @@ class LegoTool:
         # Little smokestack
         for i in range(2):
             car.append(self.createLegoCylinder(bottom=False))
-            self.moveLego(-10, 5 + 1/3 + i, 0)
+            self.moveLego(-10, 4 + 1/3 + i, 0)
 
-        # Wheels
-        car.append(self.createWheelSet(wheelScale=1.25))
-        self.moveLego(1, -4 + 1/3)
+        car.append(self.createWheelSet())
+        self.moveLego(2, -4)
+        car.append(self.createWheelSet())
+        self.moveLego(-1, -4)
 
-        for i in range(3):
-            car.append(self.createDoubleWheelSet())
-            self.moveLego(-6 - i*6, -3)
-
-        car.append(self.createWheelSet(wheelScale=0.75))
-        self.moveLego(-21, -4 - 1/3, 0)
-        car.append(self.createLegoBrick(2, 2, flat=True, top=False, bottom=False))
-        self.moveLego(-21, -1/3, 0)
+        car.append(self.createWheelSet())
+        self.moveLego(-4, -4)
+        car.append(self.createWheelSet())
+        self.moveLego(-7, -4)
 
         mc.group(car, n="Steam Engine")
 
@@ -642,7 +591,7 @@ class LegoTool:
         # Train car
         car = []
 
-        # Base plate
+        # Baseplate
         car.append(self.createLegoBrick(10, 20, bottom=False, flat=True))
         self.moveLego(0, 2 / 3, 0)
 
@@ -885,14 +834,14 @@ class LegoTool:
 
         # Wheels
         car.append(self.createWheelSet())
-        self.moveLego(6, -3 - 1/3)
+        self.moveLego(6, -3)
         car.append(self.createWheelSet())
-        self.moveLego(3, -3 - 1/3)
+        self.moveLego(3, -3)
 
         car.append(self.createWheelSet())
-        self.moveLego(-6, -3 - 1/3)
+        self.moveLego(-6, -3)
         car.append(self.createWheelSet())
-        self.moveLego(-3, -3 - 1/3)
+        self.moveLego(-3, -3)
 
         for i in range(4):
             front = 1
@@ -902,7 +851,7 @@ class LegoTool:
             if i > 1:
                 side = -1
             car.append(self.createLegoBrick(4, 1, flat=True, bottom=False))
-            self.moveLego(front * 4.4, -0.85 - 1/3, side * 4.8)
+            self.moveLego(front * 4.4, -0.85, side * 4.8)
             mc.rotate(side * 90, 0, 90)
 
         mc.group(car, n="CoalCar#")
