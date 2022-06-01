@@ -1,5 +1,4 @@
 def createLegoBrick(self, uLength=4, uWidth=2, flat=False, top=True, bottom=True):
-    # Brick constants FIXME: Make these global
     unitHeight = 0.17
     unitWidth = 0.8
     thickness = 0.12
@@ -7,7 +6,6 @@ def createLegoBrick(self, uLength=4, uWidth=2, flat=False, top=True, bottom=True
     brick = []
 
     # User defined parameters
-
     userLength = uLength
     userWidth = uWidth
     height = 0.32
